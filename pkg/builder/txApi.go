@@ -5,7 +5,6 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/xuliangTang/istio-dbcore-sdk/pbfiles"
 	"google.golang.org/grpc"
-	"log"
 )
 
 type TxApi struct {
@@ -77,7 +76,6 @@ func (this *TxApi) Query(apiName string, paramBuilder *ParamBuilder, out interfa
 func (this *TxApi) Tx(fn func(tx *TxApi) error) error {
 	err := fn(this)
 	if err != nil {
-		log.Println("cancel")
 		this.cancel()
 		return err
 	}
