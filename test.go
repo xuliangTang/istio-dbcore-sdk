@@ -5,6 +5,7 @@ import (
 	"github.com/xuliangTang/istio-dbcore-sdk/pkg/builder"
 	"google.golang.org/grpc"
 	"log"
+	"time"
 )
 
 type UserModel struct {
@@ -32,7 +33,9 @@ func main() {
 
 	// 调用
 	userAdd := &UserAdd{}
-	err = api.Invoke(context.Background(), c, paramBuilder, &userAdd)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+	defer cancel()
+	err = api.Invoke(ctx, c, paramBuilder, &userAdd)
 	if err != nil {
 		log.Fatalln(err)
 	}
