@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-type addUserScore struct {
+type ExecResult struct {
 	RowsAffected int64 `mapstructure:"rows_affected"`
 }
 
@@ -32,7 +32,7 @@ func TestTx() {
 
 		// 给用户赠送积分
 		paramBuilder = builder.NewParamBuilder().Add("userId", addUserRet.UserId).Add("score", 66)
-		addUserScoreRet := &addUserScore{}
+		addUserScoreRet := &ExecResult{}
 		err = tx.Exec("adduserscore", paramBuilder, addUserScoreRet)
 		if err != nil {
 			return err
