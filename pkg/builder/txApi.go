@@ -2,6 +2,7 @@ package builder
 
 import (
 	"context"
+	"fmt"
 	"github.com/mitchellh/mapstructure"
 	"github.com/xuliangTang/istio-dbcore-sdk/pbfiles"
 	"google.golang.org/grpc"
@@ -67,6 +68,30 @@ func (this *TxApi) Query(apiName string, paramBuilder *ParamBuilder, out interfa
 	if out != nil {
 		if queryRet, ok := rsp.Result.AsMap()["query"]; ok { // 返回map[key]value
 			return mapstructure.Decode(queryRet, out)
+		}
+	}
+
+	return nil
+}
+
+func (this *TxApi) QueryForModel(apiName string, paramBuilder *ParamBuilder, out interface{}) error {
+	err := this.client.Send(&pbfiles.TxRequest{Name: apiName, Params: paramBuilder.Build(), Type: "query"})
+	if err != nil {
+		return err
+	}
+
+	rsp, err := this.client.Recv()
+	if err != nil {
+		return err
+	}
+
+	if out != nil {
+		if queryRet, ok := rsp.Result.AsMap()["query"]; ok { // 返回map[key]value
+			if retForMap, ok := queryRet.([]interface{}); ok && len(retForMap) == 1 {
+				return mapstructure.Decode(retForMap[0], out)
+			} else {
+				return fmt.Errorf("error query model: no result ")
+			}
 		}
 	}
 
