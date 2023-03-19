@@ -5,7 +5,6 @@ import (
 	"github.com/xuliangTang/istio-dbcore-sdk/pkg/builder"
 	"google.golang.org/grpc"
 	"log"
-	"time"
 )
 
 type UserModel struct {
@@ -17,6 +16,9 @@ type UserAdd struct {
 	UserId       int64 `mapstructure:"user_id"`
 	RowsAffected int64 `mapstructure:"rows_affected"`
 }
+type UserScoreAdd struct {
+	RowsAffected int64 `mapstructure:"rows_affected"`
+}
 
 func main() {
 	// 客户端构建器
@@ -25,20 +27,44 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	// 参数构建器
-	paramBuilder := builder.NewParamBuilder().Add("name", "ruby").Add("age", 16)
+	txApi := builder.NewTxApi(context.Background(), c)
+	err = txApi.Tx(func(tx *builder.TxApi) error {
+		paramBuilder := builder.NewParamBuilder().Add("name", "hua").Add("age", 23)
+		user := &UserAdd{}
+		err := tx.Exec("adduser", paramBuilder, user)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		log.Println("addUser成功", user.UserId, user.RowsAffected)
 
-	// api构建器
-	api := builder.NewApiBuilder("adduser", 1)
+		paramBuilder = builder.NewParamBuilder().Add("userId", user.UserId).Add("score", 66)
+		userScore := &UserScoreAdd{}
+		err = tx.Exec("adduserscore", paramBuilder, userScore)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		log.Println("addUserScore成功", userScore.RowsAffected)
+		return nil
+	})
+	log.Println(err)
 
-	// 调用
-	userAdd := &UserAdd{}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
-	defer cancel()
-	err = api.Invoke(ctx, c, paramBuilder, &userAdd)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	/*
+		// 参数构建器
+		paramBuilder := builder.NewParamBuilder().Add("name", "ruby").Add("age", 16)
 
-	log.Println(userAdd)
+		// api构建器
+		api := builder.NewApiBuilder("adduser", 1)
+
+		// 调用
+		userAdd := &UserAdd{}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+		defer cancel()
+		err = api.Invoke(ctx, c, paramBuilder, &userAdd)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		log.Println(userAdd)*/
 }
