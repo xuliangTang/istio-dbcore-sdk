@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/xuliangTang/istio-dbcore-sdk/pbfiles"
 	"github.com/xuliangTang/istio-dbcore-sdk/pkg/builder"
 	"google.golang.org/grpc"
@@ -13,6 +12,10 @@ type UserModel struct {
 	Id   int64  `mapstructure:"id"`
 	Name string `mapstructure:"name"`
 	Age  uint8  `mapstructure:"age"`
+}
+type UserAdd struct {
+	UserId       int64 `mapstructure:"user_id"`
+	RowsAffected int64 `mapstructure:"rows_affected"`
 }
 
 func main() {
@@ -37,16 +40,14 @@ func main() {
 		fmt.Println(item.AsMap())
 	}*/
 
-	paramBuilder := builder.NewParamBuilder().Add("id", 9)
-	api := builder.NewApiBuilder("userlist", 0)
+	paramBuilder := builder.NewParamBuilder().Add("name", "ruby").Add("age", 16)
+	api := builder.NewApiBuilder("adduser", 1)
 
-	users := make([]*UserModel, 0)
-	err := api.Invoke(context.Background(), c, paramBuilder, &users)
+	userAdd := &UserAdd{}
+	err := api.Invoke(context.Background(), c, paramBuilder, &userAdd)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	for _, u := range users {
-		fmt.Println(u)
-	}
+	log.Println(userAdd)
 }

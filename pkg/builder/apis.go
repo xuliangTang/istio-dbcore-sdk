@@ -30,8 +30,31 @@ func (this *ApiBuilder) Invoke(ctx context.Context, client pbfiles.DBServiceClie
 			return err
 		}
 
-		mapList := helpers.PbStructToMapList(rsp.Result)
-		return mapstructure.Decode(mapList, out)
+		if out != nil {
+			mapList := helpers.PbStructToMapList(rsp.Result)
+			return mapstructure.Decode(mapList, out)
+		}
+
+		return nil
+
+	} else if this.apiType == ApiTypeExec {
+		req := &pbfiles.ExecRequest{Name: this.name, Params: builder.Build()}
+		rsp, err := client.Exec(ctx, req)
+		if err != nil {
+			return err
+		}
+
+		var m map[string]interface{}
+		if out != nil {
+			if rsp.Select != nil {
+				m = rsp.Select.AsMap()
+				m["rows_affected"] = rsp.RowsAffected
+			}
+		} else {
+			m = map[string]interface{}{"rows_affected": rsp.RowsAffected}
+		}
+
+		return mapstructure.Decode(m, out)
 	}
 
 	return nil
