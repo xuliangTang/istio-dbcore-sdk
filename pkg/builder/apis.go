@@ -2,9 +2,9 @@ package builder
 
 import (
 	"context"
-	"fmt"
+	"github.com/mitchellh/mapstructure"
 	"github.com/xuliangTang/istio-dbcore-sdk/pbfiles"
-	"log"
+	"github.com/xuliangTang/istio-dbcore-sdk/pkg/helpers"
 )
 
 const (
@@ -22,16 +22,17 @@ func NewApiBuilder(name string, apiType uint8) *ApiBuilder {
 }
 
 // Invoke 普通执行
-func (this *ApiBuilder) Invoke(ctx context.Context, client pbfiles.DBServiceClient, builder *ParamBuilder) {
+func (this *ApiBuilder) Invoke(ctx context.Context, client pbfiles.DBServiceClient, builder *ParamBuilder, out interface{}) error {
 	if this.apiType == ApiTypeQuery {
 		req := &pbfiles.QueryRequest{Name: this.name, Params: builder.Build()}
 		rsp, err := client.Query(ctx, req)
 		if err != nil {
-			log.Println(err)
-			return
+			return err
 		}
-		for _, item := range rsp.Result {
-			fmt.Println(item.AsMap())
-		}
+
+		mapList := helpers.PbStructToMapList(rsp.Result)
+		return mapstructure.Decode(mapList, out)
 	}
+
+	return nil
 }
