@@ -32,7 +32,7 @@ func (this *ApiBuilder) Invoke(ctx context.Context, client pbfiles.DBServiceClie
 
 		if out != nil {
 			mapList := helpers.PbStructToMapList(rsp.Result)
-			return mapstructure.Decode(mapList, out)
+			return mapstructure.WeakDecode(mapList, out)
 		}
 
 		return nil
@@ -54,7 +54,7 @@ func (this *ApiBuilder) Invoke(ctx context.Context, client pbfiles.DBServiceClie
 			m = map[string]interface{}{"rows_affected": rsp.RowsAffected}
 		}
 
-		return mapstructure.Decode(m, out)
+		return mapstructure.WeakDecode(m, out)
 	}
 
 	return nil
